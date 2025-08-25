@@ -66,6 +66,9 @@ typedef void (*juice_cb_candidate_t)(juice_agent_t *agent, const char *sdp, void
 typedef void (*juice_cb_gathering_done_t)(juice_agent_t *agent, void *user_ptr);
 typedef void (*juice_cb_recv_t)(juice_agent_t *agent, const char *data, size_t size,
                                 void *user_ptr);
+typedef int (*juice_cb_third_send_t)(const char* data, size_t len,const char *addr, unsigned short port,
+                                void *user_ptr);
+typedef int (*juice_cb_third_get_addrs_t)(char **addrs, size_t addrs_size, size_t addr_len, unsigned short *port,void *user_ptr);
 
 typedef struct juice_mux_binding_request {
 	const char *local_ufrag;
@@ -88,6 +91,7 @@ typedef enum juice_concurrency_mode {
 	JUICE_CONCURRENCY_MODE_POLL = 0, // Connections share a single thread
 	JUICE_CONCURRENCY_MODE_MUX,      // Connections are multiplexed on a single UDP socket
 	JUICE_CONCURRENCY_MODE_THREAD,   // Each connection runs in its own thread
+	JUICE_CONCURRENCY_MODE_THIRD,    //third imp
 } juice_concurrency_mode_t;
 
 typedef enum juice_ice_tcp_mode {
@@ -113,6 +117,8 @@ typedef struct juice_config {
 	juice_cb_candidate_t cb_candidate;
 	juice_cb_gathering_done_t cb_gathering_done;
 	juice_cb_recv_t cb_recv;
+	juice_cb_third_send_t cb_third_send;
+	juice_cb_third_get_addrs_t cb_third_get_addrs;
 
 	void *user_ptr;
 
@@ -129,6 +135,7 @@ JUICE_EXPORT int juice_add_turn_server(juice_agent_t *agent, const juice_turn_se
 JUICE_EXPORT int juice_set_remote_gathering_done(juice_agent_t *agent);
 JUICE_EXPORT int juice_send(juice_agent_t *agent, const char *data, size_t size);
 JUICE_EXPORT int juice_send_diffserv(juice_agent_t *agent, const char *data, size_t size, int ds);
+JUICE_EXPORT int juice_third_recv(juice_agent_t *agent, const char *buf, size_t len, const char *addr,unsigned short port);
 JUICE_EXPORT juice_state_t juice_get_state(juice_agent_t *agent);
 JUICE_EXPORT int juice_get_selected_candidates(juice_agent_t *agent, char *local, size_t local_size,
                                                char *remote, size_t remote_size);

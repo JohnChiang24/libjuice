@@ -102,6 +102,14 @@ JUICE_EXPORT int juice_send_diffserv(juice_agent_t *agent, const char *data, siz
 	return JUICE_ERR_FAILED;
 }
 
+JUICE_EXPORT int juice_third_recv(juice_agent_t *agent, char *buf, size_t len, const char *addr,unsigned short port) {
+	addr_record_t src = {0};
+	char strPort[56] = {0};
+	snprintf(strPort, sizeof(strPort), "%d", port);
+	addr_resolve(addr, strPort, SOCK_DGRAM, &src, 0);
+	return agent_conn_recv(agent, buf, len, &src);
+}
+
 JUICE_EXPORT juice_state_t juice_get_state(juice_agent_t *agent) { return agent_get_state(agent); }
 
 JUICE_EXPORT int juice_get_selected_candidates(juice_agent_t *agent, char *local, size_t local_size,
