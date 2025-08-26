@@ -145,25 +145,25 @@ int conn_third_send(juice_agent_t *agent, const addr_record_t *dst, const char *
 
 int conn_third_get_addrs(juice_agent_t *agent, addr_record_t *records, size_t size) {
 	if (agent->config.cb_third_get_addrs) {
-		char *addrs[ICE_MAX_CANDIDATES_COUNT - 1] = {0};
+		char *addrs[ICE_MAX_CANDIDATES_COUNT] = {0};
 		unsigned short port = 0;
 		int addr_len = 128;
-		for (int n = 0; n < ICE_MAX_CANDIDATES_COUNT - 1; n++) {
+		for (int n = 0; n < ICE_MAX_CANDIDATES_COUNT; n++) {
 			addrs[n] = (char *)malloc(addr_len);
 			memset(addrs[n], 0, addr_len);
 		}
-		agent->config.cb_third_get_addrs(&addrs, ICE_MAX_CANDIDATES_COUNT - 1, addr_len, &port,
+		agent->config.cb_third_get_addrs(&addrs, ICE_MAX_CANDIDATES_COUNT, addr_len, &port,
 		                                 agent->config.user_ptr);
 
 		char strPort[56] = {0};
 		snprintf(strPort, sizeof(strPort), "%d", port);
 
 		int records_count = 0;
-		for (int n = 0; n < ICE_MAX_CANDIDATES_COUNT - 1; n++) {
-			if (strlen(addrs[n])) {
-				if (addr_resolve(addrs[n], strPort, SOCK_DGRAM, records + records_count,
-				                 size - records_count) > 0)
-					records_count++;
+		for (int n = 0; n < ICE_MAX_CANDIDATES_COUNT; n++) {
+			if (strlen(addrs[n]) && records_count < size) {
+				int cnt = addr_resolve(addrs[n], strPort, SOCK_DGRAM, records + records_count, size - records_count);
+				if (cnt > 0)
+					records_count += cnt;
 			}
 
 			free(addrs[n]);

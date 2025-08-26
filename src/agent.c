@@ -776,7 +776,8 @@ int agent_conn_update(juice_agent_t *agent, timestamp_t *next_timestamp) {
 }
 
 int agent_conn_recv(juice_agent_t *agent, char *buf, size_t len, const addr_record_t *src) {
-	agent_input(agent, buf, len, src, NULL);
+	if (agent->config.concurrency_mode == JUICE_CONCURRENCY_MODE_THIRD)
+		agent_input(agent, buf, len, src, NULL);
 	return 0; // ignore errors
 }
 

@@ -106,7 +106,7 @@ JUICE_EXPORT int juice_third_recv(juice_agent_t *agent, char *buf, size_t len, c
 	addr_record_t src = {0};
 	char strPort[56] = {0};
 	snprintf(strPort, sizeof(strPort), "%d", port);
-	addr_resolve(addr, strPort, SOCK_DGRAM, &src, 0);
+	addr_resolve(addr, strPort, SOCK_DGRAM, &src, 1);
 	return agent_conn_recv(agent, buf, len, &src);
 }
 
