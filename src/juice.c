@@ -30,6 +30,11 @@ JUICE_EXPORT void juice_destroy(juice_agent_t *agent) {
 		agent_destroy(agent);
 }
 
+JUICE_EXPORT int is_stun(const void *data, size_t size) {
+	if (is_stun_datagram(data,size)) return 0;
+	return -1;
+}
+
 JUICE_EXPORT int juice_gather_candidates(juice_agent_t *agent) {
 	if (!agent)
 		return JUICE_ERR_INVALID;
