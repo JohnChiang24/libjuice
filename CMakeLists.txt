@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 project (libjuice
-	VERSION 1.7.0
+	VERSION 1.7.1
 	LANGUAGES C)
 set(PROJECT_DESCRIPTION "UDP Interactive Connectivity Establishment (ICE) library")
 
@@ -197,7 +197,10 @@ endif()
 target_compile_definitions(juice-static PRIVATE JUICE_EXPORTS)
 target_compile_definitions(juice-static PUBLIC JUICE_STATIC)
 
-if(NOT MSVC)
+if(MSVC)
+	target_compile_options(juice PRIVATE /utf-8)
+	target_compile_options(juice-static PRIVATE /utf-8)
+else()
 	target_compile_options(juice PRIVATE -Wall -Wextra)
 	target_compile_options(juice-static PRIVATE -Wall -Wextra)
 endif()
