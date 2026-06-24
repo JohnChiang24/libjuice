@@ -11,6 +11,7 @@
 #include "conn_mux.h"
 #include "conn_poll.h"
 #include "conn_thread.h"
+#include "conn_extern.h"
 #include "log.h"
 
 #include <assert.h>
@@ -18,21 +19,24 @@
 
 #define INITIAL_REGISTRY_SIZE 16
 
-#define MODE_ENTRIES_SIZE 3
+#define MODE_ENTRIES_SIZE 4
 
 static conn_mode_entry_t mode_entries[MODE_ENTRIES_SIZE] = {
     {conn_poll_registry_init, conn_poll_registry_cleanup, conn_poll_init, conn_poll_cleanup,
      conn_poll_lock, conn_poll_unlock, conn_poll_interrupt, conn_poll_send, conn_poll_tcp_connect, conn_poll_get_addrs,
-     NULL, NULL, NULL, MUTEX_INITIALIZER, NULL},
+     NULL, NULL, NULL,NULL, MUTEX_INITIALIZER, NULL},
     {conn_mux_registry_init, conn_mux_registry_cleanup, conn_mux_init, conn_mux_cleanup,
      conn_mux_lock, conn_mux_unlock, conn_mux_interrupt, conn_mux_send, NULL, conn_mux_get_addrs,
-     conn_mux_listen, conn_mux_get_registry, conn_mux_can_release_registry, MUTEX_INITIALIZER, NULL},
+     conn_mux_listen, conn_mux_get_registry, conn_mux_can_release_registry,NULL, MUTEX_INITIALIZER, NULL},
     {NULL, NULL, conn_thread_init, conn_thread_cleanup,
      conn_thread_lock, conn_thread_unlock, conn_thread_interrupt, conn_thread_send, NULL, conn_thread_get_addrs,
-     NULL, NULL, NULL, MUTEX_INITIALIZER, NULL}
-};
+     NULL, NULL, NULL, NULL,MUTEX_INITIALIZER, NULL},
+	{NULL, NULL, conn_extern_init, conn_extern_cleanup, 
+	conn_extern_lock,conn_extern_unlock, conn_extern_interrupt, conn_extern_send, NULL,conn_extern_get_addrs, NULL,NULL,NULL,
+     conn_extern_incoming2,
+     MUTEX_INITIALIZER, NULL}};
 
-#define MODE_ENTRIES_SIZE 3
+#define MODE_ENTRIES_SIZE 4
 
 static conn_mode_entry_t mode_entries[MODE_ENTRIES_SIZE];
 
@@ -251,6 +255,12 @@ int conn_send(juice_agent_t *agent, const addr_record_t *dst, const char *data, 
 		return -1;
 
 	return get_agent_mode_entry(agent)->send_func(agent, dst, data, size, ds);
+}
+
+int conn_extern_incoming(juice_agent_t *agent, const addr_record_t *src, const char *data, size_t size) {
+	if (!agent->conn_impl)
+		return -1;
+	return get_agent_mode_entry(agent)->incoming_func(agent, src, data, size);
 }
 
 void conn_tcp_connect(juice_agent_t *agent, const addr_record_t *dst) {

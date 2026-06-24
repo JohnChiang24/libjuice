@@ -88,6 +88,19 @@ JUICE_EXPORT int juice_send(juice_agent_t *agent, const char *data, size_t size)
 	return juice_send_diffserv(agent, data, size, 0);
 }
 
+JUICE_EXPORT int juice_extern_incoming(juice_agent_t *agent, const char *src_addr, unsigned short src_port,
+                                const char *data, size_t size) {
+	addr_record_t src = {0};
+	char port[24] = {0};
+	snprintf(port, sizeof(port), "%d", src_port);
+	addr_resolve(src_addr, port, SOCK_DGRAM, &src, 1);
+	return agent_extern_incoming(agent, &src, data, size);
+}
+
+JUICE_EXPORT bool juice_is_stun_datagram(const void *data, size_t size) {
+	return is_stun_datagram(data, size);
+}
+
 JUICE_EXPORT int juice_send_diffserv(juice_agent_t *agent, const char *data, size_t size, int ds) {
 	if (!agent || (!data && size))
 		return JUICE_ERR_INVALID;

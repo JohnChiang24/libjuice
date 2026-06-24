@@ -66,6 +66,8 @@ typedef void (*juice_cb_candidate_t)(juice_agent_t *agent, const char *sdp, void
 typedef void (*juice_cb_gathering_done_t)(juice_agent_t *agent, void *user_ptr);
 typedef void (*juice_cb_recv_t)(juice_agent_t *agent, const char *data, size_t size,
                                 void *user_ptr);
+typedef int (*juice_cb_outgoing_t)(const char* dst_addr, unsigned short dst_port, const char *data, size_t size,
+                                void *user_ptr);
 
 typedef struct juice_mux_binding_request {
 	const char *local_ufrag;
@@ -88,6 +90,7 @@ typedef enum juice_concurrency_mode {
 	JUICE_CONCURRENCY_MODE_POLL = 0, // Connections share a single thread
 	JUICE_CONCURRENCY_MODE_MUX,      // Connections are multiplexed on a single UDP socket
 	JUICE_CONCURRENCY_MODE_THREAD,   // Each connection runs in its own thread
+	JUICE_CONCURRENCY_MODE_EXTERN,
 } juice_concurrency_mode_t;
 
 typedef enum juice_ice_tcp_mode {
@@ -114,6 +117,10 @@ typedef struct juice_config {
 	juice_cb_gathering_done_t cb_gathering_done;
 	juice_cb_recv_t cb_recv;
 
+	// for extern
+	juice_cb_outgoing_t extern_cb_outgoing;
+	long long extern_sock;
+
 	void *user_ptr;
 
 } juice_config_t;
@@ -138,6 +145,12 @@ JUICE_EXPORT int juice_set_local_ice_attributes(juice_agent_t *agent, const char
 JUICE_EXPORT const char *juice_state_to_string(juice_state_t state);
 JUICE_EXPORT int juice_mux_listen(const char *bind_address, int local_port, juice_cb_mux_incoming_t cb, void *user_ptr);
 JUICE_EXPORT int juice_set_ice_tcp_mode(juice_agent_t *agent, juice_ice_tcp_mode_t ice_tcp_mode);
+
+// for extern
+JUICE_EXPORT int juice_extern_incoming(juice_agent_t *agent, const char* src_addr, unsigned short src_port, const char *data,
+                            size_t size);
+JUICE_EXPORT bool juice_is_stun_datagram(const void *data, size_t size);
+
 
 // ICE server
 

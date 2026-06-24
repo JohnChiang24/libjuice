@@ -108,6 +108,8 @@ juice_agent_t *agent_create(const juice_config_t *config) {
 	agent->config.cb_gathering_done = config->cb_gathering_done;
 	agent->config.cb_recv = config->cb_recv;
 	agent->config.user_ptr = config->user_ptr;
+	agent->config.extern_cb_outgoing = config->extern_cb_outgoing;
+	agent->config.extern_sock = config->extern_sock;
 	if (alloc_failed) {
 		JLOG_FATAL("Memory allocation for configuration copy failed");
 		goto error;
@@ -687,6 +689,10 @@ int agent_send(juice_agent_t *agent, const char *data, size_t size, int ds) {
 	return agent_direct_send(agent, &selected_entry->record, data, size, ds);
 }
 
+int agent_extern_incoming(juice_agent_t *agent, const addr_record_t *src, const char *data, size_t size) {
+	return conn_extern_incoming(agent, src, data, size);
+}
+
 int agent_direct_send(juice_agent_t *agent, const addr_record_t *dst, const char *data, size_t size,
                       int ds) {
 	return conn_send(agent, dst, data, size, ds);
@@ -890,7 +896,7 @@ int agent_conn_tcp_state(juice_agent_t *agent, const addr_record_t *dst, tcp_sta
 				entry->state = AGENT_STUN_ENTRY_STATE_FAILED;
 				entry->next_transmission = 0;
 
-				if(entry->pair)
+				if (entry->pair)
 					entry->pair->state = ICE_CANDIDATE_PAIR_STATE_FAILED;
 
 				conn_interrupt(agent);
@@ -923,10 +929,10 @@ int agent_bookkeeping(juice_agent_t *agent, timestamp_t *next_timestamp) {
 				continue;
 
 			if (entry_is_tcp(entry)) {
-			    if (entry->tcp_state == TCP_STATE_DISCONNECTED)
+				if (entry->tcp_state == TCP_STATE_DISCONNECTED)
 					conn_tcp_connect(agent, &entry->record); // First attempt a TCP connection
 
-				if(entry->tcp_state != TCP_STATE_CONNECTED)
+				if (entry->tcp_state != TCP_STATE_CONNECTED)
 					continue;
 			}
 
@@ -1237,7 +1243,7 @@ int agent_bookkeeping(juice_agent_t *agent, timestamp_t *next_timestamp) {
 			*next_timestamp = entry->next_transmission;
 
 #if defined(JUICE_DISABLE_CONSENT_FRESHNESS) && JUICE_DISABLE_CONSENT_FRESHNESS
-		// No expiration
+			// No expiration
 #else
 		if (entry->state == AGENT_STUN_ENTRY_STATE_SUCCEEDED_KEEPALIVE && entry->pair &&
 		    *next_timestamp > entry->pair->consent_expiry)

@@ -49,6 +49,8 @@ typedef struct conn_mode_entry {
 	int (*mux_listen_func)(conn_registry_t *registry, juice_cb_mux_incoming_t cb, void *user_ptr);
 	conn_registry_t *(*get_registry_func)(udp_socket_config_t *config);
 	bool (*can_release_registry_func)(conn_registry_t *registry);
+	int (*incoming_func)(juice_agent_t *agent, const addr_record_t *src, const char *data,
+	                  size_t size);
 
 	mutex_t mutex;
 	conn_registry_t *registry;
@@ -64,5 +66,7 @@ int conn_send(juice_agent_t *agent, const addr_record_t *dst, const char *data, 
               int ds);
 void conn_tcp_connect(juice_agent_t *agent, const addr_record_t *dst);
 int conn_get_addrs(juice_agent_t *agent, addr_record_t *records, size_t size);
+int conn_extern_incoming(juice_agent_t *agent, const addr_record_t *src, const char *data,
+                         size_t size);
 
 #endif
